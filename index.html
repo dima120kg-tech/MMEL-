@@ -8,7 +8,6 @@
 <meta name="apple-mobile-web-app-title" content="MEL ATR 72">
 <meta name="theme-color" content="#0b1f33">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
 <title>MEL ATR 72 · UTair</title>
 <style>
   :root {
@@ -126,8 +125,82 @@
   <button id="toggleBtn">Переключить</button>
 </div>
 
-<script src="data.js"></script>
 <script>
+/* ============================================================
+   ВСЯ БАЗА ЗДЕСЬ
+   ============================================================ */
+const MEL_DATA = [
+  {ata:"21", item:"21-22-1", title:"Recirculation Fan", cat:"C", inst:"2", req:"0", remarks:"One or both may be inoperative.", page:121},
+  {ata:"21", item:"21-23-1", title:"Overboard Valve — Automatic mode", cat:"C", inst:"1", req:"0", remarks:"(O) Automatic mode may be inoperative provided: (a) Manual mode checked before each departure, (b) Flight in unpressurized config, max FL100.", page:122},
+  {ata:"21", item:"21-23-3", title:"Extract Fan", cat:"C", inst:"1", req:"0", remarks:"(O) May be inoperative provided exhaust mode selected OVBD, extended overwater prohibited, FL limited to FL170.", page:125},
+  {ata:"21", item:"21-30-1", title:"Pressurization System", cat:"C", inst:"1", req:"0", remarks:"(O)(M) Automatic and manual modes may be inoperative: unpressurized, max FL100, outflow valves secured open.", page:126},
+  {ata:"21", item:"21-31-1", title:"Automatic Pressurization Control", cat:"C", inst:"1", req:"0", remarks:"(O) Set cabin altitude manually based on table (ΔP = 6 PSI).", page:127},
+  {ata:"22", item:"22-15-1", title:"Advisory Display Unit (ADU)", cat:"A", inst:"1", req:"0", remarks:"(O) May be inoperative: both mode annunciators operative, FD only, ALT SEL not used, max 2 calendar days. CAT2 prohibited.", page:142},
+  {ata:"22", item:"22-16-1", title:"Pitch wheel", cat:"C", inst:"1", req:"0", remarks:"May be inoperative provided one TCS is operative.", page:143},
+  {ata:"22", item:"22-18-1", title:"Autopilot function", cat:"A", inst:"1", req:"0", remarks:"May be inoperative. Any operative mode may be used. CAT2 approaches prohibited.", page:147},
+  {ata:"22", item:"22-18-2", title:"Flight director function", cat:"A", inst:"1", req:"0", remarks:"(O) May be inoperative. CAT2 approaches prohibited.", page:148},
+  {ata:"22", item:"22-18-3", title:"Yaw Damper Function", cat:"A", inst:"1", req:"0", remarks:"(O) RCU inoperative — PF keeps feet on pedals to control rudder.", page:149},
+  {ata:"23", item:"23-12-1", title:"VHF system", cat:"B", inst:"2", req:"1", remarks:"(O) VHF1 operative. For IFR: permission from ANSP if two VHF required. Total VHF COM failure — departure prohibited.", page:156},
+  {ata:"23", item:"23-31-1", title:"Passenger Address System", cat:"A", inst:"1", req:"0", remarks:"(O) Special signals: 2 chimes — cabin to cockpit; 3 — emergency descend; 5 — evacuation.", page:158},
+  {ata:"23", item:"23-44-1", title:"Interphone system", cat:"C", inst:"-", req:"-", remarks:"(O) Various sub-items may be inoperative with alternate procedures established.", page:159},
+  {ata:"23", item:"23-71-1", title:"Cockpit Voice Recorder", cat:"A", inst:"1", req:"0", remarks:"(M) May be inoperative: max 8 further consecutive flights or 72 h. DFDR operative. C/B COM/CVR pulled, yellow ring installed.", page:170},
+  {ata:"24", item:"24-21-1", title:"AC Inverter", cat:"A", inst:"2", req:"1", remarks:"Inverter #2 only. Day VMC only, AP prohibited below 1000 ft AGL, max 2 calendar days, TLU manual mode operative.", page:172},
+  {ata:"24", item:"24-22-1", title:"ACW Generation (Generator and/or GCU)", cat:"A", inst:"2", req:"1", remarks:"(O)(M) HYD AUX pump operative, AFM Deviation Guide, both DC Gen operative, not from base, max 2 days, day only, no icing, instructor on board.", page:176},
+  {ata:"24", item:"24-30-1", title:"DC Generation (Generator and/or GCU)", cat:"A", inst:"2", req:"1", remarks:"(O) TRU checked before departure, two-engine taxi, no line-up until 6 min after gen on line, both ACW Gen operative, max 2 days.", page:180},
+  {ata:"24", item:"24-32-2", title:"DC generation Bus Tie Contactor (BTC)", cat:"B", inst:"1", req:"0", remarks:"(O) May be inoperative in ISOL position: both DC gen channels operative, DC BUS OFF lights operative, both inverters operative, HYD X FEED used for T/O and landing.", page:184},
+  {ata:"25", item:"25-11-1", title:"Flight Crew Seat — Vertical and Recline Adjustments", cat:"-", inst:"2", req:"-", remarks:"Seat secured/locked, horizontal adjustment operative. Stuck seat — certifying staff fixates and informs MCC.", page:190},
+  {ata:"25", item:"25-21-1", title:"Required Cabin Attendant Seat", cat:"B", inst:"2", req:"0", remarks:"(O) Cabin attendant occupies seat 18B (AFT failure) or 1B (FWD failure). (M) Install placard.", page:195},
+  {ata:"25", item:"25-31-1-1", title:"Passenger Seats", cat:"D", inst:"70", req:"60", remarks:"(M) Ten may be inoperative: not blocking exit, not restricting aisle, blocked and placarded. Seat with inoperative belt = inoperative.", page:197},
+  {ata:"26", item:"26-12-1", title:"Fire Detection Loop", cat:"C", inst:"4", req:"3", remarks:"One may be inoperative provided affected loop selected OFF.", page:212},
+  {ata:"26", item:"26-15-1", title:"Cargo Smoke Alert", cat:"C", inst:"2", req:"0", remarks:"May be inoperative provided no combustible material in associated compartment.", page:215},
+  {ata:"26", item:"26-21-1", title:"AGENT DISCH light (engine)", cat:"A", inst:"4", req:"2", remarks:"(M) One or two may be inoperative: not on same fire panel, bottle pressure checked daily, max 2 calendar days.", page:218},
+  {ata:"27", item:"27-20-1", title:"Rudder Damper", cat:"C", inst:"1", req:"0", remarks:"(O) Max crosswind 15 kt, max total wind 30 kt. PF and PNF keep feet on pedals during taxi.", page:222},
+  {ata:"27", item:"27-23-1", title:"Travel Limiter Unit (TLU)", cat:"C", inst:"1", req:"0", remarks:"May be inoperative in low speed position, speed limited to 185 kt.", page:224},
+  {ata:"27", item:"27-51-1", title:"Flaps Control System", cat:"A", inst:"1", req:"0", remarks:"(O) Flaps checked retracted, AFM Deviation Guide, max 2 flights.", page:236},
+  {ata:"27", item:"27-61-1", title:"Spoiler Control System", cat:"B", inst:"1", req:"0", remarks:"(M)(O) Spoilers secured retracted, AFM Deviation Guide.", page:239},
+  {ata:"28", item:"28-21-2", title:"Electrical Fuel Pump", cat:"C", inst:"2", req:"1", remarks:"(M)(O) One may be inoperative: X FEED valve operative, associated jet pump operative, max fuel unbalance 730 kg.", page:245},
+  {ata:"28", item:"28-23-1", title:"X FEED Valve", cat:"C", inst:"1", req:"0", remarks:"(O) X FEED valve checked closed, both fuel quantity indications operative, max unbalance 730 kg.", page:250},
+  {ata:"29", item:"29-11-1", title:"Main HYD Pump", cat:"C", inst:"2", req:"1", remarks:"(O)(M) X FEED open, both ACW Gen operative, ACW BTC operative, DC AUX pump normal, no narrow runways (<30 m).", page:264},
+  {ata:"30", item:"30-30-1", title:"Probe heating System — Pitot", cat:"B", inst:"3", req:"2", remarks:"One may be inoperative provided aircraft is not operated into known or forecast icing conditions.", page:282},
+  {ata:"31", item:"31-32-1", title:"Digital Flight Data Recorder (DFDR)", cat:"A", inst:"1", req:"0", remarks:"Not dispatched from base, flight permitted to base/MRO, CVR operative.", page:305},
+  {ata:"31", item:"31-48-1-1", title:"MFC module 1A", cat:"A", inst:"1", req:"0", remarks:"(O) OVBD valve manual mode, RH pack, AC BTC, INV2 operative. Test Flaps UNLOCK and Stick pusher inhibition. Max 2 days.", page:307},
+  {ata:"32", item:"32-42-1", title:"Wheel Brake", cat:"C", inst:"4", req:"3", remarks:"(O)(M) One may be inoperative: anti-skid operative, affected brake deactivated, gear left down 1 min after T/O, AFM Deviation Guide.", page:325},
+  {ata:"32", item:"32-42-2", title:"Anti-skid system", cat:"A", inst:"1", req:"0", remarks:"(O) AFM Deviation Guide, flight to base/MRO, special crew briefing, Flight Ops Director permission, no precipitation, not combined with MEL 61-45-1.", page:326},
+  {ata:"33", item:"33-41-1", title:"NAV Lights System", cat:"C", inst:"1", req:"0", remarks:"May be inoperative for daylight operation.", page:341},
+  {ata:"34", item:"34-11-1-1", title:"Air Data Computer (ADC)", cat:"A", inst:"2", req:"1", remarks:"(O)(M) ADC #2 only: day VMC, AP prohibited below 1000 ft AGL, max 2 days, TLU manual mode, flights above 4200 m prohibited.", page:356},
+  {ata:"34", item:"34-42-1", title:"Radio Altimeter System", cat:"A", inst:"1", req:"0", remarks:"(O) GPWS and ACAS considered inoperative, repairs within 6 flights/25 h/2 days, CAT2 prohibited.", page:373},
+  {ata:"34", item:"34-48-1-1", title:"TAWS — GPWS Reactive modes and TERRAIN Predictive", cat:"A", inst:"1", req:"0", remarks:"(O) Repairs within 6 flights/25 h/2 days. GPWS and TERRAIN callouts lost. CAT2 prohibited.", page:374},
+  {ata:"34", item:"34-57-1", title:"ACAS System", cat:"A", inst:"1", req:"0", remarks:"(O) May be inoperative for 10 calendar days provided system set to STBY. PF is captain; altitude copied and verified by PNF.", page:381},
+  {ata:"34", item:"34-58-1", title:"GPS — GNSS", cat:"A", inst:"1", req:"0", remarks:"(O) Navigation systems operative, alternate procedures, VOR/DME/ADF operative, flight to base/MRO.", page:382},
+  {ata:"36", item:"36-11-2", title:"BLEED Valve", cat:"A", inst:"2", req:"1", remarks:"(O)(M) One may be inoperative: secured closed, FL170, associated bleed OFF, flight to base/MRO, not from base. Avoid large rapid power change.", page:399},
+  {ata:"52", item:"52-21-1", title:"Emergency Exit", cat:"A", inst:"5", req:"4", remarks:"One may be inoperative max 5 flights: pax reduction policy, exit closed/locked, barrier + placard, visual indications obscured, crew briefed, overwater prohibited.", page:411},
+  {ata:"61", item:"61-21-2", title:"PEC channel", cat:"A", inst:"4", req:"2", remarks:"(O) Two may be inoperative: one channel per engine, reversers not used on narrow runways, max 2 calendar days.", page:420},
+  {ata:"73", item:"73-23-2", title:"Engine Control (EEC)", cat:"A", inst:"2", req:"1", remarks:"(O) DC HYD pump operative, associated pack and bleed valve operative, AFM Deviation Guide, max 2 days, crosswind 15 kt, no narrow runways.", page:439},
+  {ata:"77", item:"77-13-1", title:"TQ Indications", cat:"C", inst:"2", req:"0", remarks:"(M) Digital counters may be inoperative if both EECs and HBV operative. Pointer inop — AFU considered inoperative.", page:453},
+  {ata:"79", item:"79-32-1", title:"Oil Temperature Indication", cat:"B", inst:"2", req:"1", remarks:"(M) One may be inoperative: oil level checked daily, fuel temp gauge operative and monitored, oil pressure gauge operative.", page:460},
+  {ata:"NEF", item:"25-60-2-1", title:"Interior placards", cat:"N", inst:"-", req:"-", remarks:"May be missing or damaged except placards in NEF Appendix. All placards can be degraded but legible.", page:465},
+  {ata:"NEF", item:"25-60-2-2", title:"Safety Demo Equipment", cat:"N", inst:"1", req:"-", remarks:"May be inoperative or missing.", page:465},
+  {ata:"NEF", item:"25-60-2-2", title:"PSU panel — Passenger Seat Reading Lights", cat:"N", inst:"70", req:"-", remarks:"May be missing or inoperative.", page:465},
+  {ata:"NEF", item:"25-60-2-3", title:"Galley — Trolley / Half Trolley", cat:"A", inst:"-", req:"-", remarks:"May be inoperative: stow and latch, repairs within 30 flight days, placard INOPERATIVE-DO NOT USE.", page:468},
+  {ata:"NEF", item:"25-60-2-3", title:"Galley — Oven", cat:"C", inst:"1", req:"0", remarks:"One may be inoperative or missing.", page:468},
+  {ata:"NEF", item:"25-60-2-4", title:"Flight Deck — Sunshades (Roller Shade)", cat:"N", inst:"4", req:"-", remarks:"May be inoperative or missing.", page:469},
+  {ata:"NEF", item:"25-60-2-5", title:"Lavatory — Lavatory lights", cat:"C", inst:"1", req:"-", remarks:"May be inoperative.", page:470},
+  {ata:"CDL", item:"CDL 23-1", title:"Static dischargers", cat:"CDL", inst:"25", req:"17", remarks:"Any in excess of 17 may be missing provided: each aileron at least 4, rudder at least 4, each elevator at least 2, tail cone at least 1 operative static discharger.", page:477},
+  {ata:"CDL", item:"CDL 27-1", title:"Flap hinge fairing", cat:"CDL", inst:"8", req:"6", remarks:"One or two may be missing provided: not operated into known or forecast icing, only one per half wing.", page:478},
+  {ata:"CDL", item:"CDL 32-1", title:"Main Gear Door", cat:"CDL", inst:"2", req:"1", remarks:"One may be missing provided: max speed 200 kt, not operated into forecast or known icing. Associated foldable doors must be removed.", page:479},
+  {ata:"CDL", item:"CDL 52-1", title:"Access door to GPU connector", cat:"CDL", inst:"2", req:"0", remarks:"One or both may be missing.", page:481},
+  {ata:"CDL", item:"CDL 61-1", title:"Propeller Spinner", cat:"CDL", inst:"2", req:"1", remarks:"One may be missing provided aircraft is not operated into forecast or known icing conditions.", page:484},
+  {ata:"PLACARD", item:"PL-01001", title:"LIMIT", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01001. Used for partial failure or operational limitations.", page:487},
+  {ata:"PLACARD", item:"PL-01002", title:"INOP", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01002. Used for complete failure of MEL item.", page:487},
+  {ata:"PLACARD", item:"PL-01003", title:"INOPERATIVE - DO NOT USE / НЕИСПРАВНО - НЕ ИСПОЛЬЗОВАТЬ", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01003. Red letters, 150×40 mm.", page:487},
+  {ata:"PLACARD", item:"PL-01006", title:"CAT I", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01006. Landing category placard on captain's panel.", page:487},
+  {ata:"PLACARD", item:"PL-01012", title:"ПОЖАЛУЙСТА, НЕ ЗАНИМАЙТЕ МЕСТО / PLEASE DO NOT OCCUPY", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01012. Used for blocked seats.", page:487},
+  {ata:"PLACARD", item:"PL-01019", title:"INOPERATIVE – DO NOT ENTER / НЕИСПРАВНО - НЕ ВХОДИТЬ", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01019. Used for lavatory doors.", page:487}
+];
+
+/* ============================================================
+   ЛОГИКА
+   ============================================================ */
 const listEl = document.getElementById('list');
 const searchEl = document.getElementById('search');
 const filtersEl = document.getElementById('filters');
@@ -143,27 +216,24 @@ let currentCat = 'all';
 let currentQuery = '';
 let pdfUrl = null;
 
-/* Тема */
-const body = document.body;
-document.getElementById('toggleBtn').addEventListener('click', () => {
-  body.classList.toggle('night');
-  const isNight = body.classList.contains('night');
-  document.getElementById('toggleLabel').textContent = isNight ? '☀️ Дневной режим' : '🌙 Ночной режим';
-  localStorage.setItem('mel_theme', isNight ? 'night' : 'day');
-});
-if (localStorage.getItem('mel_theme') === 'night') {
-  body.classList.add('night');
-  document.getElementById('toggleLabel').textContent = '☀️ Дневной режим';
-}
+const SPECIAL = ['NEF','CDL','PLACARD'];
 
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function ataLabel(ata) {
+  return SPECIAL.includes(ata) ? ata : 'ATA ' + ata;
+}
+
 function buildFilters() {
-  const atas = [...new Set(MEL_DATA.map(i => i.ata))].sort((a,b) => a - b);
+  const atas = [...new Set(MEL_DATA.map(i => i.ata))].sort((a,b) => {
+    if (SPECIAL.includes(a) && !SPECIAL.includes(b)) return 1;
+    if (!SPECIAL.includes(a) && SPECIAL.includes(b)) return -1;
+    return a.localeCompare(b, undefined, {numeric: true});
+  });
   filtersEl.innerHTML = '<button data-cat="all" class="active">Все</button>' +
-    atas.map(a => `<button data-cat="${a}">ATA ${a}</button>`).join('');
+    atas.map(a => `<button data-cat="${a}">${ataLabel(a)}</button>`).join('');
 }
 
 function render() {
@@ -177,7 +247,7 @@ function render() {
   listEl.innerHTML = filtered.map(it => {
     const idx = MEL_DATA.indexOf(it);
     return `<div class="card" data-idx="${idx}">
-      <div class="ata">ATA ${escapeHtml(it.ata)} · ${escapeHtml(it.item)}</div>
+      <div class="ata">${ataLabel(it.ata)} · ${escapeHtml(it.item)}</div>
       <h2>${escapeHtml(it.title)}</h2>
       <div class="meta">
         ${it.cat !== '-' ? `<span class="tag cat">Кат. ${escapeHtml(it.cat)}</span>` : ''}
@@ -195,7 +265,7 @@ function openSheet(idx) {
   if (!it) return;
   sheetInner.innerHTML = `
     <button class="close">✕</button>
-    <div style="font-size:13px;color:var(--accent);font-weight:700;">ATA ${escapeHtml(it.ata)} · ${escapeHtml(it.item)}</div>
+    <div style="font-size:13px;color:var(--accent);font-weight:700;">${ataLabel(it.ata)} · ${escapeHtml(it.item)}</div>
     <h2>${escapeHtml(it.title)}</h2>
     <div class="meta" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;">
       ${it.cat !== '-' ? `<span class="tag cat">Категория ${escapeHtml(it.cat)}</span>` : ''}
@@ -222,56 +292,10 @@ filtersEl.addEventListener('click', e => {
   render();
 });
 
-/* PDF */
-function openDB(){ return new Promise((res, rej) => { const req = indexedDB.open('mel_atr72_db', 1); req.onupgradeneeded = () => { req.result.createObjectStore('files'); }; req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error); }); }
-async function savePdf(blob){ const db = await openDB(); return new Promise((res, rej) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').put(blob, 'mel_pdf'); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); }); }
-async function loadPdf(){ const db = await openDB(); return new Promise((res, rej) => { const tx = db.transaction('files', 'readonly'); const req = tx.objectStore('files').get('mel_pdf'); req.onsuccess = () => res(req.result || null); req.onerror = () => rej(req.error); }); }
-
-async function refreshPdfStatus() {
-  if (pdfUrl) { URL.revokeObjectURL(pdfUrl); pdfUrl = null; }
-  const blob = await loadPdf();
-  if (blob) {
-    pdfUrl = URL.createObjectURL(blob);
-    pdfStatus.textContent = 'PDF · ' + (blob.size/1024/1024).toFixed(1) + ' МБ';
-    const meta = JSON.parse(localStorage.getItem('mel_pdf_meta') || '{}');
-    revInfo.textContent = meta.rev ? `Ревизия: ${meta.rev}` : 'PDF загружен';
-  } else {
-    pdfStatus.textContent = 'PDF не загружен';
-    revInfo.textContent = 'Ревизия не загружена';
-  }
-}
-
-async function openPdf(page) {
-  if (!pdfUrl) { alert('Сначала загрузите PDF-документ.'); return; }
-  pdfFrame.src = pdfUrl + '#page=' + (page || 1);
-  pdfViewer.classList.add('open');
-}
-document.getElementById('pdfClose').addEventListener('click', () => { pdfViewer.classList.remove('open'); pdfFrame.src = ''; });
-
-document.getElementById('btnImportPdf').addEventListener('click', () => fileInput.click());
-document.getElementById('btnUpdatePdf').addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', async e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  try {
-    await savePdf(file);
-    const revMatch = file.name.match(/rev[._\s-]*([0-9a-z]+)/i);
-    localStorage.setItem('mel_pdf_meta', JSON.stringify({
-      rev: revMatch ? revMatch[1] : '',
-      date: new Date().toISOString().slice(0,10),
-      name: file.name
-    }));
-    await refreshPdfStatus();
-    alert('PDF сохранён офлайн.');
-  } catch (err) { alert('Ошибка: ' + err.message); }
-  fileInput.value = '';
-});
-
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
-
-buildFilters();
-render();
-refreshPdfStatus();
-</script>
-</body>
-</html>
+/* Тема */
+const body = document.body;
+document.getElementById('toggleBtn').addEventListener('click', () => {
+  body.classList.toggle('night');
+  const isNight = body.classList.contains('night');
+  document.getElementById('toggleLabel').textContent = isNight ? '☀️ Дневной режим' : '🌙 Ночной режим';
+  localStorage.setItem('mel
