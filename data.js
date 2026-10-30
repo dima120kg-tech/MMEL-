@@ -89,4 +89,12 @@ const MEL_DATA = [
   {ata:"CDL", item:"CDL 55-1", title:"CDL: Vertical Stabilizer Attach Fitting Rubber Plug", cat:"CDL", inst:"4", req:"3", remarks:"One may be missing provided the hole is covered with high speed tape.", page:483},
   {ata:"CDL", item:"CDL 61-1", title:"CDL: Propeller Spinner", cat:"CDL", inst:"2", req:"1", remarks:"One may be missing provided aircraft is not operated into forecast or known icing conditions.", page:484},
   {ata:"CDL", item:"CDL 79-1", title:"CDL: Engine Oil Cooler Flap", cat:"CDL", inst:"4", req:"3", remarks:"One may be missing provided flap is removed and engine oil parameters monitored throughout the flight.", page:485}
-];
+  {ata:"PLACARD", item:"PL-01001", title:"Placard: LIMIT", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01001. Used for partial failure or operational limitations.", page:487},
+  {ata:"PLACARD", item:"PL-01002", title:"Placard: INOP", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01002. Used for complete failure of MEL item.", page:487},
+  {ata:"PLACARD", item:"PL-01003", title:"Placard: INOPERATIVE - DO NOT USE / НЕИСПРАВНО - НЕ ИСПОЛЬЗОВАТЬ", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01003. Red letters, 150×40 mm.", page:487},
+  {ata:"PLACARD", item:"PL-01006", title:"Placard: CAT I", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01006. Landing category placard on captain's panel.", page:487},
+  {ata:"PLACARD", item:"PL-01012", title:"Placard: ПОЖАЛУЙСТА, НЕ ЗАНИМАЙТЕ МЕСТО / PLEASE DO NOT OCCUPY", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01012. Used for blocked seats.", page:487},
+  {ata:"PLACARD", item:"PL-01013", title:"Placard: НЕИСПРАВНО - НЕ ИСПОЛЬЗОВАТЬ / INOPERATIVE - DO NOT USE", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01013. 70×40 mm, 3 lines.", page:487},
+  {ata:"PLACARD", item:"PL-01017", title:"Placard: DO NOT STOW BAGGAGE UNDER THIS SEAT / НЕ РАЗМЕЩАЙТЕ БАГАЖ ПОД КРЕСЛОМ", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01017. Used for seats with inoperative restraint bars.", page:487},
+  {ata:"PLACARD", item:"PL-01019", title:"Placard: INOPERATIVE – DO NOT ENTER / НЕИСПРАВНО - НЕ ВХОДИТЬ", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01019. Used for lavatory doors.", page:487},
+  {ata:"PLACARD", item:"PL-01023", title:"Placard: TO CALL CREW IN AN EMERGENCY KNOCK LOUDLY OR SHOUT FOR ASSISTANCE / ДЛЯ ВЫЗОВА ЭКИПАЖА В АВАРИЙНОМ СЛУЧАЕ СТУЧАТЬ В ДВЕРЬ ИЛИ КРИЧАТЬ", cat:"-", inst:"-", req:"-", remarks:"P/N 0000-000-UTMEL-01023. 180×60 mm, 4 lines.", page:487}];
