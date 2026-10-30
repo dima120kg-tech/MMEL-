@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MEL ATR 72">
+<meta name="theme-color" content="#0b1f33">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>MEL ATR 72 · UTair</title>
+<style>
+  :root {
+    --bg: #f4f7fa; --panel: #ffffff; --panel2: #e8eef4;
+    --txt: #0b1f33; --muted: #5a7184; --accent: #0284c7; --line: #d0dbe6;
+  }
+  body.night {
+    --bg: #050b12; --panel: #0a141f; --panel2: #122233;
+    --txt: #d4e3f0; --muted: #6b8299; --accent: #ff6b35; --line: #1a2d40;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    background: var(--bg); color: var(--txt); margin: 0; padding: 0;
+    display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    transition: background .3s, color .3s;
+  }
+  header { padding: 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0; font-size: 20px; font-weight: 700; }
+  header .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .topbar { padding: 12px 16px; background: var(--panel); border-bottom: 1px solid var(--line); display: flex; gap: 8px; }
+  .topbar button {
+    flex: 1; height: 56px; border-radius: 14px; border: none;
+    background: var(--accent); color: #fff; font-size: 16px; font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+  .topbar button:active { opacity: .75; }
+  .topbar button.secondary { background: var(--panel2); color: var(--txt); border: 1px solid var(--line); box-shadow: none; }
+  .searchbox { padding: 12px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  .searchbox input {
+    width: 100%; height: 48px; padding: 0 16px; border-radius: 12px;
+    border: 1px solid var(--line); background: var(--panel2);
+    color: var(--txt); font-size: 17px; outline: none;
+  }
+  .filters { display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px; background: var(--panel); border-bottom: 1px solid var(--line); -webkit-overflow-scrolling: touch; }
+  .filters::-webkit-scrollbar { display: none; }
+  .filters button {
+    flex: 0 0 auto; height: 40px; padding: 0 18px; border-radius: 20px;
+    border: 1px solid var(--line); background: transparent; color: var(--muted);
+    font-size: 15px; font-weight: 600;
+  }
+  .filters button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  main { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    padding: 18px; margin-bottom: 12px; cursor: pointer; transition: transform .1s;
+  }
+  .card:active { transform: scale(.98); background: var(--panel2); }
+  .card .ata { font-size: 13px; color: var(--accent); font-weight: 700; }
+  .card h2 { margin: 8px 0 10px; font-size: 17px; font-weight: 600; line-height: 1.35; }
+  .card .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { font-size: 12px; padding: 5px 10px; border-radius: 8px; background: var(--panel2); color: var(--muted); border: 1px solid var(--line); font-weight: 600; }
+  .tag.cat { color: var(--accent); border-color: var(--accent); }
+  .empty { text-align: center; color: var(--muted); padding: 40px 20px; }
+  .sheet { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 50; display: none; align-items: flex-end; }
+  .sheet.open { display: flex; }
+  .sheet-inner { background: var(--panel); width: 100%; max-height: 88vh; overflow-y: auto; border-radius: 18px 18px 0 0; padding: 18px; padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
+  .sheet-inner h2 { margin: 6px 0 4px; font-size: 19px; }
+  .sheet-inner .close { float: right; background: var(--panel2); border: 1px solid var(--line); color: var(--txt); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; }
+  .sheet-inner .block { margin-top: 16px; }
+  .sheet-inner .block h3 { font-size: 12px; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; letter-spacing: .5px; }
+  .sheet-inner .block p { margin: 0; font-size: 16px; line-height: 1.55; white-space: pre-wrap; }
+  .open-pdf-btn { display: block; width: 100%; height: 56px; margin-top: 16px; border-radius: 14px; border: none; background: var(--accent); color: #fff; font-size: 17px; font-weight: 700; }
+  .bottombar { padding: 12px 16px; background: var(--panel); border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .bottombar .label { font-size: 15px; color: var(--muted); font-weight: 600; }
+  .bottombar button { height: 48px; padding: 0 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--txt); font-size: 16px; font-weight: 600; }
+  #pdfViewer { position: fixed; inset: 0; z-index: 100; background: #000; display: none; flex-direction: column; padding-top: env(safe-area-inset-top); }
+  #pdfViewer.open { display: flex; }
+  #pdfViewer .bar { display: flex; gap: 10px; padding: 12px; background: var(--panel); align-items: center; }
+  #pdfViewer .bar button { background: var(--panel2); border: 1px solid var(--line); color: var(--txt); padding: 10px 16px; border-radius: 10px; font-size: 15px; }
+  #pdfViewer iframe { flex: 1; border: none; background: #333; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MEL · ATR 72 · UTair</h1>
+  <div class="sub" id="revInfo">Ревизия не загружена</div>
+</header>
+
+<div class="topbar">
+  <button id="btnImportPdf">📄 Загрузить PDF</button>
+  <button id="btnUpdatePdf" class="secondary">🔄 Обновить</button>
+</div>
+
+<div class="searchbox">
+  <input id="search" type="search" placeholder="Поиск: ATA, пункт, система, текст…" autocomplete="off">
+</div>
+
+<div class="filters" id="filters">
+  <button data-cat="all" class="active">Все</button>
+</div>
+
+<main id="list"></main>
+
+<input type="file" id="fileInput" accept="application/pdf" class="hidden">
+
+<div class="sheet" id="sheet">
+  <div class="sheet-inner" id="sheetInner"></div>
+</div>
+
+<div id="pdfViewer">
+  <div class="bar">
+    <button id="pdfClose">← Закрыть</button>
+    <span style="font-size:13px;color:var(--muted);" id="pdfStatus">PDF не загружен</span>
+  </div>
+  <iframe id="pdfFrame" title="MEL PDF"></iframe>
+</div>
+
+<div class="bottombar">
+  <span class="label" id="toggleLabel">🌙 Ночной режим</span>
+  <button id="toggleBtn">Переключить</button>
+</div>
+
+<script src="data.js"></script>
+<script>
+const listEl = document.getElementById('list');
+const searchEl = document.getElementById('search');
+const filtersEl = document.getElementById('filters');
+const sheet = document.getElementById('sheet');
+const sheetInner = document.getElementById('sheetInner');
+const fileInput = document.getElementById('fileInput');
+const pdfViewer = document.getElementById('pdfViewer');
+const pdfFrame = document.getElementById('pdfFrame');
+const pdfStatus = document.getElementById('pdfStatus');
+const revInfo = document.getElementById('revInfo');
+
+let currentCat = 'all';
+let currentQuery = '';
+let pdfUrl = null;
+
+/* Тема */
+const body = document.body;
+document.getElementById('toggleBtn').addEventListener('click', () => {
+  body.classList.toggle('night');
+  const isNight = body.classList.contains('night');
+  document.getElementById('toggleLabel').textContent = isNight ? '☀️ Дневной режим' : '🌙 Ночной режим';
+  localStorage.setItem('mel_theme', isNight ? 'night' : 'day');
+});
+if (localStorage.getItem('mel_theme') === 'night') {
+  body.classList.add('night');
+  document.getElementById('toggleLabel').textContent = '☀️ Дневной режим';
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function buildFilters() {
+  const atas = [...new Set(MEL_DATA.map(i => i.ata))].sort((a,b) => a - b);
+  filtersEl.innerHTML = '<button data-cat="all" class="active">Все</button>' +
+    atas.map(a => `<button data-cat="${a}">ATA ${a}</button>`).join('');
+}
+
+function render() {
+  const q = currentQuery.trim().toLowerCase();
+  const filtered = MEL_DATA.filter(it => {
+    const matchCat = currentCat === 'all' || it.ata === currentCat;
+    const hay = [it.ata, it.item, it.title, it.remarks, it.cat].join(' ').toLowerCase();
+    return matchCat && (!q || hay.includes(q));
+  });
+  if (!filtered.length) { listEl.innerHTML = '<div class="empty">Ничего не найдено.</div>'; return; }
+  listEl.innerHTML = filtered.map(it => {
+    const idx = MEL_DATA.indexOf(it);
+    return `<div class="card" data-idx="${idx}">
+      <div class="ata">ATA ${escapeHtml(it.ata)} · ${escapeHtml(it.item)}</div>
+      <h2>${escapeHtml(it.title)}</h2>
+      <div class="meta">
+        ${it.cat !== '-' ? `<span class="tag cat">Кат. ${escapeHtml(it.cat)}</span>` : ''}
+        <span class="tag">Inst ${escapeHtml(it.inst)} / Req ${escapeHtml(it.req)}</span>
+      </div>
+    </div>`;
+  }).join('');
+  listEl.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => openSheet(parseInt(card.dataset.idx, 10)));
+  });
+}
+
+function openSheet(idx) {
+  const it = MEL_DATA[idx];
+  if (!it) return;
+  sheetInner.innerHTML = `
+    <button class="close">✕</button>
+    <div style="font-size:13px;color:var(--accent);font-weight:700;">ATA ${escapeHtml(it.ata)} · ${escapeHtml(it.item)}</div>
+    <h2>${escapeHtml(it.title)}</h2>
+    <div class="meta" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;">
+      ${it.cat !== '-' ? `<span class="tag cat">Категория ${escapeHtml(it.cat)}</span>` : ''}
+      <span class="tag">Installed: ${escapeHtml(it.inst)}</span>
+      <span class="tag">Required: ${escapeHtml(it.req)}</span>
+    </div>
+    <div class="block"><h3>Remarks / Exceptions</h3><p>${escapeHtml(it.remarks)}</p></div>
+    <button class="open-pdf-btn" id="openPdfBtn">📖 Открыть в документе (стр. ${it.page})</button>
+  `;
+  sheet.classList.add('open');
+  sheetInner.querySelector('.close').addEventListener('click', closeSheet);
+  sheetInner.querySelector('#openPdfBtn').addEventListener('click', () => openPdf(it.page));
+}
+
+function closeSheet() { sheet.classList.remove('open'); }
+sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
+searchEl.addEventListener('input', e => { currentQuery = e.target.value; render(); });
+filtersEl.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  filtersEl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = btn.dataset.cat;
+  render();
+});
+
+/* PDF */
+function openDB(){ return new Promise((res, rej) => { const req = indexedDB.open('mel_atr72_db', 1); req.onupgradeneeded = () => { req.result.createObjectStore('files'); }; req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error); }); }
+async function savePdf(blob){ const db = await openDB(); return new Promise((res, rej) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').put(blob, 'mel_pdf'); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); }); }
+async function loadPdf(){ const db = await openDB(); return new Promise((res, rej) => { const tx = db.transaction('files', 'readonly'); const req = tx.objectStore('files').get('mel_pdf'); req.onsuccess = () => res(req.result || null); req.onerror = () => rej(req.error); }); }
+
+async function refreshPdfStatus() {
+  if (pdfUrl) { URL.revokeObjectURL(pdfUrl); pdfUrl = null; }
+  const blob = await loadPdf();
+  if (blob) {
+    pdfUrl = URL.createObjectURL(blob);
+    pdfStatus.textContent = 'PDF · ' + (blob.size/1024/1024).toFixed(1) + ' МБ';
+    const meta = JSON.parse(localStorage.getItem('mel_pdf_meta') || '{}');
+    revInfo.textContent = meta.rev ? `Ревизия: ${meta.rev}` : 'PDF загружен';
+  } else {
+    pdfStatus.textContent = 'PDF не загружен';
+    revInfo.textContent = 'Ревизия не загружена';
+  }
+}
+
+async function openPdf(page) {
+  if (!pdfUrl) { alert('Сначала загрузите PDF-документ.'); return; }
+  pdfFrame.src = pdfUrl + '#page=' + (page || 1);
+  pdfViewer.classList.add('open');
+}
+document.getElementById('pdfClose').addEventListener('click', () => { pdfViewer.classList.remove('open'); pdfFrame.src = ''; });
+
+document.getElementById('btnImportPdf').addEventListener('click', () => fileInput.click());
+document.getElementById('btnUpdatePdf').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    await savePdf(file);
+    const revMatch = file.name.match(/rev[._\s-]*([0-9a-z]+)/i);
+    localStorage.setItem('mel_pdf_meta', JSON.stringify({
+      rev: revMatch ? revMatch[1] : '',
+      date: new Date().toISOString().slice(0,10),
+      name: file.name
+    }));
+    await refreshPdfStatus();
+    alert('PDF сохранён офлайн.');
+  } catch (err) { alert('Ошибка: ' + err.message); }
+  fileInput.value = '';
+});
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+buildFilters();
+render();
+refreshPdfStatus();
+</script>
+</body>
+</html>
